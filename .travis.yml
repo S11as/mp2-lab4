@@ -5,9 +5,9 @@ before_script:
   - mkdir ../build
   - cd ../build
 script:
-  - cmake ../mp2-template
+  - cmake ../mp2-lab4
   - make -j
   - cd ./test
-  - ./test_boilerplatelib
+  - ./test_queuelib
 notifications:
   email: false

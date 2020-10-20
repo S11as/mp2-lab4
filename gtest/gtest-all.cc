@@ -1061,7 +1061,7 @@ class GTEST_API_ UnitTestImpl {
     // the user may have changed the current directory before calling
     // RUN_ALL_TESTS().  Therefore we capture the current directory in
     // AddTestInfo(), which is called to register a TEST or TEST_F
-    // before boilerplate() is reached.
+    // before queue() is reached.
     if (original_working_dir_.IsEmpty()) {
       original_working_dir_.Set(FilePath::GetCurrentDir());
       GTEST_CHECK_(!original_working_dir_.IsEmpty())
@@ -1795,7 +1795,7 @@ UInt32 Random::Generate(UInt32 range) {
 // A user must call testing::InitGoogleTest() to initialize Google
 // Test.  g_init_gtest_count is set to the number of times
 // InitGoogleTest() has been called.  We don't protect this variable
-// under a mutex as it is only accessed in the boilerplate thread.
+// under a mutex as it is only accessed in the queue thread.
 GTEST_API_ int g_init_gtest_count = 0;
 static bool GTestIsInitialized() { return g_init_gtest_count != 0; }
 
@@ -4436,7 +4436,7 @@ TestEventListener* TestEventRepeater::Release(TestEventListener *listener) {
   return NULL;
 }
 
-// Since most methods are very similar, use macros to reduce boilerplate.
+// Since most methods are very similar, use macros to reduce queue.
 // This defines a member that forwards the call to all listeners.
 #define GTEST_REPEATER_METHOD_(Name, Type) \
 void TestEventRepeater::Name(const Type& parameter) { \
@@ -5120,7 +5120,7 @@ void TestEventListeners::SuppressEventForwarding() {
 // calls will return the same object.
 //
 // We don't protect this under mutex_ as a user is not supposed to
-// call this before boilerplate() starts, from which point on the return
+// call this before queue() starts, from which point on the return
 // value will never change.
 UnitTest* UnitTest::GetInstance() {
   // When compiled with MSVC 7.1 in optimized mode, destroying the
@@ -5244,7 +5244,7 @@ TestEventListeners& UnitTest::listeners() {
 // The UnitTest object takes ownership of the given environment.
 //
 // We don't protect this under mutex_, as we only support calling it
-// from the boilerplate thread.
+// from the queue thread.
 Environment* UnitTest::AddEnvironment(Environment* env) {
   if (env == NULL) {
     return NULL;
@@ -5334,7 +5334,7 @@ void UnitTest::RecordProperty(const std::string& key,
 // Returns 0 if successful, or 1 otherwise.
 //
 // We don't protect this under mutex_, as we only support calling it
-// from the boilerplate thread.
+// from the queue thread.
 int UnitTest::Run() {
   const bool in_death_test_child_process =
       internal::GTEST_FLAG(internal_run_death_test).length() > 0;
@@ -7356,7 +7356,7 @@ DeathTest::TestRole NoExecDeathTest::AssumeRole() {
   }
 }
 
-// A concrete death test class that forks and re-executes the boilerplate
+// A concrete death test class that forks and re-executes the queue
 // program from the beginning, with command-line flags set that cause
 // only this specific death test to be run.
 class ExecDeathTest : public ForkingDeathTest {
@@ -7432,7 +7432,7 @@ inline char** GetEnviron() { return environ; }
 #  endif  // GTEST_OS_MAC
 
 #  if !GTEST_OS_QNX
-// The boilerplate function for a threadsafe-style death test child process.
+// The queue function for a threadsafe-style death test child process.
 // This function is called in a clone()-ed process and thus must avoid
 // any potentially unsafe operations like malloc or libc functions.
 static int ExecDeathTestChildMain(void* child_arg) {
@@ -7588,7 +7588,7 @@ static pid_t ExecDeathTestSpawnChild(char* const* argv, int close_fd) {
 }
 
 // The AssumeRole process for a fork-and-exec death test.  It re-executes the
-// boilerplate program from the beginning, setting the --gtest_filter
+// queue program from the beginning, setting the --gtest_filter
 // and --gtest_internal_run_death_test flags to cause only the current
 // death test to be re-run.
 DeathTest::TestRole ExecDeathTest::AssumeRole() {
