@@ -7,6 +7,7 @@
 
 #include <stdexcept>
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 
@@ -143,10 +144,11 @@ T TQueue<T>::get_max() {
     int index = this->front;
     T max = *this->arr[index];
     for (int i = 1; i < this->count; ++i) {
-        index = (this->front + 1) % this->size;
+        index = (this->front + i) % this->size;
         T elem = *this->arr[index];
-        if (elem > max)
+        if (elem > max){
             max = elem;
+        }
     }
     return max;
 }
@@ -159,7 +161,7 @@ T TQueue<T>::get_least() {
     int index = this->front;
     T least = *this->arr[index];
     for (int i = 1; i < this->count; ++i) {
-        index = (this->front + 1) % this->size;
+        index = (this->front + i) % this->size;
         T elem = *this->arr[index];
         if (elem < least)
             least = elem;
